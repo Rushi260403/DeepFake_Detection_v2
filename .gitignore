@@ -1,0 +1,20 @@
+# Virtual env
+.venv/
+
+# Dataset (never push)
+dataset/
+*.mp4
+*.avi
+*.mkv
+
+# Model files
+*.h5
+*.pt
+
+# Cache
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
