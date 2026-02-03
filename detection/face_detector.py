@@ -8,6 +8,9 @@ class YOLOFaceDetector:
         # YOLOv8 nano model (CPU friendly)
         self.model = YOLO("yolov8n.pt")
 
+    # ===============================
+    # For IMAGE files (Phase 1.1)
+    # ===============================
     def detect_faces(self, image_path, save_dir):
         os.makedirs(save_dir, exist_ok=True)
 
@@ -32,3 +35,23 @@ class YOLOFaceDetector:
                 face_count += 1
 
         return face_count
+
+    # ======================================
+    # NEW: For VIDEO FRAMES (Phase 1.2)
+    # ======================================
+    def detect_faces_from_frame(self, frame):
+        faces = []
+
+        results = self.model(frame, conf=0.4)
+
+        for r in results:
+            for box in r.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                face = frame[y1:y2, x1:x2]
+
+                if face.size == 0:
+                    continue
+
+                faces.append(face)
+
+        return faces
