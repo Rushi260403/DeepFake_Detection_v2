@@ -2,9 +2,9 @@ import os
 import cv2
 from face_detector import YOLOFaceDetector
 
-# ===============================
-# PROJECT ROOT (VERY IMPORTANT)
-# ===============================
+# =============================
+# PATH SETUP (ABSOLUTE)
+# =============================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
@@ -12,35 +12,50 @@ DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset")
 VIDEO_DIR = os.path.join(DATASET_DIR, "videos")
 FRAME_DIR = os.path.join(DATASET_DIR, "frames")
 
-FRAME_SKIP = 30   # process 1 frame per second (CPU friendly)
-
+FRAME_SKIP = 30  # 1 frame per second (CPU safe)
 detector = YOLOFaceDetector()
+
+
+def load_progress(progress_file):
+    if not os.path.exists(progress_file):
+        return set()
+    with open(progress_file, "r") as f:
+        return set(line.strip() for line in f.readlines())
+
+
+def save_progress(progress_file, video_name):
+    with open(progress_file, "a") as f:
+        f.write(video_name + "\n")
 
 
 def run_extraction(class_name):
     video_dir = os.path.join(VIDEO_DIR, class_name)
     output_dir = os.path.join(FRAME_DIR, class_name)
+    progress_file = os.path.join(FRAME_DIR, f".progress_{class_name}.txt")
 
     os.makedirs(output_dir, exist_ok=True)
 
-    if not os.path.exists(video_dir):
-        print(f"❌ Video directory not found: {video_dir}")
-        return
+    processed_videos = load_progress(progress_file)
 
-    print(f"\n📂 Processing class: {class_name}")
+    print(f"\n📂 Class: {class_name}")
+    print(f"📌 Already processed: {len(processed_videos)} videos")
 
     for video_file in os.listdir(video_dir):
         if not video_file.lower().endswith((".mp4", ".avi", ".mov")):
             continue
 
+        if video_file in processed_videos:
+            print(f"⏭️ Skipping (already done): {video_file}")
+            continue
+
         video_path = os.path.join(video_dir, video_file)
         video_name = os.path.splitext(video_file)[0]
+
+        print(f"\n🎥 Processing: {video_file}")
 
         cap = cv2.VideoCapture(video_path)
         frame_count = 0
         saved_faces = 0
-
-        print(f"🎥 Processing video: {video_file}")
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -62,11 +77,13 @@ def run_extraction(class_name):
             frame_count += 1
 
         cap.release()
-        print(f"✅ Saved {saved_faces} faces from {video_file}")
+        save_progress(progress_file, video_file)
+
+        print(f"✅ Saved {saved_faces} faces")
 
 
 if __name__ == "__main__":
-    print("🚀 Starting FACE EXTRACTION (YOLO)")
+    print("🚀 Phase 1.3 — Resume-Safe Face Extraction Started")
     run_extraction("real")
     run_extraction("fake")
-    print("🎉 Phase 1.2 completed")
+    print("🎉 Phase 1.3 Completed Successfully")
