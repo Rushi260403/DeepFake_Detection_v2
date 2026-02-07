@@ -39,7 +39,7 @@ if len(os.listdir(REAL_PATH)) == 0 or len(os.listdir(FAKE_PATH)) == 0:
 # =================================================
 IMG_SIZE = 224
 BATCH_SIZE = 16
-EPOCHS = 10
+EPOCHS = 5
 
 datagen = ImageDataGenerator(
     rescale=1.0 / 255,
@@ -72,6 +72,8 @@ base_model = EfficientNetB0(
 )
 
 base_model.trainable = False
+for layer in base_model.layers[-15:]:
+    layer.trainable = True
 
 x = base_model.output
 x = GlobalAveragePooling2D()(x)
@@ -89,10 +91,16 @@ model.compile(
 # =================================================
 # 🚀 TRAIN
 # =================================================
+class_weight = {
+    0: 1.0,   # REAL
+    1: 6.0    # FAKE
+}
+
 model.fit(
     train_data,
     validation_data=val_data,
-    epochs=EPOCHS
+    epochs=EPOCHS,
+    class_weight=class_weight
 )
 
 # =================================================
