@@ -3,38 +3,32 @@ import random
 import shutil
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-SOURCE_PATH = os.path.join(PROJECT_ROOT, "dataset", "frames")
-TARGET_PATH = os.path.join(PROJECT_ROOT, "dataset", "balanced_frames")
 
-REAL_SRC = os.path.join(SOURCE_PATH, "real")
-FAKE_SRC = os.path.join(SOURCE_PATH, "fake")
+SRC_REAL = os.path.join(PROJECT_ROOT, "dataset", "frames", "real")
+SRC_FAKE = os.path.join(PROJECT_ROOT, "dataset", "frames", "fake")
 
-REAL_DST = os.path.join(TARGET_PATH, "real")
-FAKE_DST = os.path.join(TARGET_PATH, "fake")
+DST_ROOT = os.path.join(PROJECT_ROOT, "dataset", "balanced_frames")
+DST_REAL = os.path.join(DST_ROOT, "real")
+DST_FAKE = os.path.join(DST_ROOT, "fake")
 
-os.makedirs(REAL_DST, exist_ok=True)
-os.makedirs(FAKE_DST, exist_ok=True)
+os.makedirs(DST_REAL, exist_ok=True)
+os.makedirs(DST_FAKE, exist_ok=True)
 
-real_images = os.listdir(REAL_SRC)
-fake_images = os.listdir(FAKE_SRC)
+real_imgs = os.listdir(SRC_REAL)
+fake_imgs = os.listdir(SRC_FAKE)
 
-real_count = len(real_images)
-fake_sample = random.sample(fake_images, real_count)
+real_count = len(real_imgs)
 
-print(f"Balancing dataset to {real_count} images per class")
+# 🔥 CRITICAL: limit fake frames to real count
+fake_imgs = random.sample(fake_imgs, real_count)
 
-# Copy REAL
-for img in real_images:
-    shutil.copy(
-        os.path.join(REAL_SRC, img),
-        os.path.join(REAL_DST, img)
-    )
+print(f"REAL frames used : {real_count}")
+print(f"FAKE frames used : {len(fake_imgs)}")
 
-# Copy FAKE (downsampled)
-for img in fake_sample:
-    shutil.copy(
-        os.path.join(FAKE_SRC, img),
-        os.path.join(FAKE_DST, img)
-    )
+for img in real_imgs:
+    shutil.copy(os.path.join(SRC_REAL, img), DST_REAL)
 
-print("✅ Dataset balancing complete")
+for img in fake_imgs:
+    shutil.copy(os.path.join(SRC_FAKE, img), DST_FAKE)
+
+print("✅ Balanced frame dataset created")
