@@ -8,6 +8,7 @@ from tensorflow.keras.models import Model
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATASET_PATH = os.path.join(PROJECT_ROOT, "dataset", "balanced_frames")
 
+
 IMG_SIZE = 224
 BATCH_SIZE = 32
 EPOCHS = 5
@@ -53,10 +54,10 @@ model.compile(
     metrics=["accuracy"]
 )
 
-# Class weights (based on original dataset imbalance)
+# Mild weights (not aggressive)
 class_weight = {
-    0: 5.7,  # REAL
-    1: 1.0   # FAKE
+    0: 1.0,  # REAL
+    1: 1.2   # FAKE (slightly higher)
 }
 
 model.fit(
@@ -68,3 +69,4 @@ model.fit(
 
 model.save(os.path.join(PROJECT_ROOT, "model", "face_classifier_balanced.h5"))
 print("✅ Balanced model trained & saved")
+
