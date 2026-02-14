@@ -34,10 +34,7 @@ def predict_face(face_img):
     face_img = face_img / 255.0
     face_img = np.expand_dims(face_img, axis=0)
 
-    real_prob = face_model.predict(face_img, verbose=0)[0][0]
-
-    fake_prob = 1.0 - real_prob  # 🔥 FIX
-    return fake_prob
+    return face_model.predict(face_img, verbose=0)[0][0]
 
 # ==================================================
 # VIDEO PREDICTION
