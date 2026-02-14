@@ -83,24 +83,24 @@ def final_video_decision(probs):
     mean = probs.mean()
     std = probs.std()
 
-    real_frames = np.sum(probs >= 0.65)
-    fake_frames = np.sum(probs <= 0.35)
-
-    total = len(probs)
-
-    real_ratio = real_frames / total
-    fake_ratio = fake_frames / total
-
-    # STRONG FAKE
-    if fake_ratio >= 0.25 and mean <= 0.45:
+    # -----------------------------
+    # 🔥 FAKE (DO NOT TOUCH)
+    # -----------------------------
+    if std < 0.04 and mean < 0.55:
         return "FAKE", min(95.0, (1 - mean) * 100)
 
-    # STRONG REAL
-    if real_ratio >= 0.60 and mean >= 0.55:
-        return "REAL", min(95.0, mean * 100)
+    # -----------------------------
+    # ✅ REAL (MINOR RELAXATION)
+    # -----------------------------
+    # High variance = natural video
+    if mean >= 0.50 and std >= 0.06:
+        return "REAL", min(90.0, mean * 100)
 
-    # AI / AMBIGUOUS
+    # -----------------------------
+    # UNCERTAIN (AI / AMBIGUOUS)
+    # -----------------------------
     return "UNCERTAIN", 50.0
+
 
 # ==================================================
 # RUN
