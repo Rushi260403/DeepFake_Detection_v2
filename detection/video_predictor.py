@@ -69,25 +69,38 @@ def predict_video(video_path):
 
     cap.release()
 
-    # 🚨 NO FACE FOUND
-    if len(fake_probs) == 0:
+    if len(fake_probs) < 5:
         return "FACE NOT FOUND", 0.0
+
+    return final_video_decision(fake_probs)
 
     # ==================================================
     # 🔥 VIDEO-LEVEL VOTING (CRITICAL FIX)
     # ==================================================
-    fake_count = sum(p >= FAKE_THRESHOLD for p in fake_probs)
-    total = len(fake_probs)
-    fake_ratio = fake_count / total
+def final_video_decision(probs):
+    probs = np.array(probs)
 
-    if fake_ratio >= 0.30:
-        return "FAKE", fake_ratio * 100
+    mean = probs.mean()
+    std = probs.std()
 
-    elif fake_ratio <= 0.10:
-        return "REAL", (1 - fake_ratio) * 100
+    real_frames = np.sum(probs >= 0.65)
+    fake_frames = np.sum(probs <= 0.35)
 
-    else:
-        return "UNCERTAIN", 50.0
+    total = len(probs)
+
+    real_ratio = real_frames / total
+    fake_ratio = fake_frames / total
+
+    # STRONG FAKE
+    if fake_ratio >= 0.25 and mean <= 0.45:
+        return "FAKE", min(95.0, (1 - mean) * 100)
+
+    # STRONG REAL
+    if real_ratio >= 0.60 and mean >= 0.55:
+        return "REAL", min(95.0, mean * 100)
+
+    # AI / AMBIGUOUS
+    return "UNCERTAIN", 50.0
 
 # ==================================================
 # RUN
