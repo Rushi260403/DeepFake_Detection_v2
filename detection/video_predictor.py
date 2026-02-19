@@ -22,9 +22,8 @@ yolo = YOLO("yolov8n.pt")
 IMG_SIZE = 224
 FRAME_SKIP = 10   # CPU friendly
 
-# 🔥 OPTIMIZED THRESHOLDS (from Phase 3.3)
+# 🔥 THRESHOLDS (from Phase 3.3)
 FAKE_THRESHOLD = 0.60
-REAL_THRESHOLD = 0.35
 
 # ==================================================
 # FACE PREDICTION
@@ -34,7 +33,12 @@ def predict_face(face_img):
     face_img = face_img / 255.0
     face_img = np.expand_dims(face_img, axis=0)
 
-    return face_model.predict(face_img, verbose=0)[0][0]
+    real_prob = face_model.predict(face_img, verbose=0)[0][0]
+
+    fake_prob = 1.0 - real_prob  # 🔥 THE REAL FIX
+
+    return fake_prob
+
 
 # ==================================================
 # VIDEO PREDICTION
@@ -69,39 +73,31 @@ def predict_video(video_path):
 
     cap.release()
 
+    # 🚨 NO FACE FOUND
     if len(fake_probs) < 5:
         return "FACE NOT FOUND", 0.0
 
-    return final_video_decision(fake_probs)
-
     # ==================================================
-    # 🔥 VIDEO-LEVEL VOTING (CRITICAL FIX)
+    # 🔥 FINAL VIDEO-LEVEL LOGIC (MINOR RELAXATION FOR REAL)
     # ==================================================
-def final_video_decision(probs):
-    probs = np.array(probs)
+    fake_probs = np.array(fake_probs)
 
-    mean = probs.mean()
-    std = probs.std()
+    mean_fake = fake_probs.mean()
+    low_fake_ratio = np.sum(fake_probs <= 0.25) / len(fake_probs)
+    high_fake_ratio = np.sum(fake_probs >= FAKE_THRESHOLD) / len(fake_probs)
 
-    # -----------------------------
-    # 🔥 FAKE (DO NOT TOUCH)
-    # -----------------------------
-    if std < 0.04 and mean < 0.55:
-        return "FAKE", min(95.0, (1 - mean) * 100)
+    # 🚨 STRONG FAKE (HARD OVERRIDE — NEW)
+    if high_fake_ratio >= 0.20 or mean_fake >= 0.45:
+        confidence = min(95.0, max(mean_fake, high_fake_ratio) * 100)
+        return "FAKE", confidence
 
-    # -----------------------------
-    # ✅ REAL (MINOR RELAXATION)
-    # -----------------------------
-    # High variance = natural video
-    if mean >= 0.50 and std >= 0.06:
-        return "REAL", min(90.0, mean * 100)
+    # ✅ STRONG REAL (UNCHANGED)
+    if low_fake_ratio >= 0.60 and high_fake_ratio < 0.10:
+        confidence = min(95.0, (1 - mean_fake) * 100)
+        return "REAL", confidence
 
-    # -----------------------------
-    # UNCERTAIN (AI / AMBIGUOUS)
-    # -----------------------------
+    # 🤖 AI / AMBIGUOUS (UNCHANGED)
     return "UNCERTAIN", 50.0
-
-
 # ==================================================
 # RUN
 # ==================================================

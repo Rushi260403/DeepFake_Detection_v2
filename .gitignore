@@ -1,12 +1,12 @@
 # Virtual env
 .venv/
 
-# Dataset (never push)
+# Ignore dataset (videos, frames, faces)
 dataset/
 *.mp4
 *.avi
 *.mkv
-
+*.mov
 # Model files
 *.h5
 *.pt
