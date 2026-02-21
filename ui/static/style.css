@@ -1,49 +1,90 @@
-body {
+body
+{
+    margin:0;
+    height:100vh;
 
-background: url('/static/bg.jpg') no-repeat center center fixed;
-background-size: cover;
+    background:url("/static/bg.jpg") center/cover no-repeat;
 
-font-family: Arial;
-color: white;
-
+    font-family:Arial;
+    display:flex;
+    justify-content:center;
+    align-items:center;
 }
 
-.container {
 
-width: 600px;
-margin: 100px auto;
-padding: 30px;
+.glass
+{
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(15px);
 
+    padding:30px;
+    border-radius:15px;
+
+    text-align:center;
 }
 
-.glass {
 
-background: rgba(255,255,255,0.1);
-
-backdrop-filter: blur(15px);
-
-border-radius: 15px;
-
-box-shadow: 0 0 40px rgba(0,0,0,0.5);
-
+button
+{
+    padding:10px 20px;
+    margin-top:10px;
+    cursor:pointer;
 }
 
-button {
 
-padding: 10px;
-margin-top: 20px;
-
+.hidden
+{
+    display:none;
 }
 
-.hidden {
 
-display:none;
+.spinner
+{
+    width:40px;
+    height:40px;
+    border:5px solid white;
+    border-top:5px solid transparent;
 
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+    margin:auto;
 }
 
-#frames img {
 
-width: 100px;
-margin: 5px;
+@keyframes spin
+{
+    100%
+    {
+        transform:rotate(360deg);
+    }
+}
 
+
+.framesGrid
+{
+    display:grid;
+    grid-template-columns: repeat(5,1fr);
+    gap:10px;
+    margin-top:20px;
+}
+
+
+.frameImage
+{
+    width:100%;
+    border-radius:8px;
+}
+
+.frame {
+    width: 120px;
+    margin: 5px;
+    border-radius: 8px;
+}
+
+.resultBox
+{
+    margin-top:15px;
+    font-size:18px;
 }

@@ -1,38 +1,45 @@
-function uploadVideo(){
+async function uploadVideo() {
 
-let file = document.getElementById("videoInput").files[0];
+    const input = document.getElementById("videoInput");
+    const file = input.files[0];
 
-let formData = new FormData();
+    if (!file) {
+        alert("Please select a video");
+        return;
+    }
 
-formData.append("video", file);
+    const loader = document.getElementById("loader");
+    const resultDiv = document.getElementById("result");
 
-document.getElementById("loader").classList.remove("hidden");
+    loader.classList.remove("hidden");
+    resultDiv.innerHTML = "";
 
-fetch("/upload",{
+    const formData = new FormData();
+    formData.append("video", file);
 
-method:"POST",
-body:formData
+    try {
 
-})
-.then(res=>res.json())
-.then(data=>{
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData
+        });
 
-document.getElementById("loader").classList.add("hidden");
+        const data = await response.json();
 
-document.getElementById("result").innerHTML =
-"<h2>"+data.result+"</h2>"+
-"<h3>"+data.confidence+"</h3>";
+        loader.classList.add("hidden");
 
-let framesHTML="";
+        resultDiv.innerHTML = `
+            <h2>Result: ${data.result}</h2>
+            <h3>Confidence: ${data.confidence}</h3>
+        `;
 
-data.frames.forEach(f=>{
+    }
+    catch (error) {
 
-framesHTML += `<img src="${f}">`;
+        loader.classList.add("hidden");
 
-});
+        resultDiv.innerHTML = "Error analyzing video";
 
-document.getElementById("frames").innerHTML=framesHTML;
-
-});
-
+        console.error(error);
+    }
 }
