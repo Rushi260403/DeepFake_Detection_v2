@@ -10,7 +10,7 @@ from ultralytics import YOLO
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 MODEL_PATH = os.path.join(
-    PROJECT_ROOT, "model", "face_classifier_finetuned.h5"
+    PROJECT_ROOT, "model", "face_classifier_balanced.h5"
 )
 
 # ==================================================
@@ -20,41 +20,53 @@ face_model = tf.keras.models.load_model(MODEL_PATH)
 yolo = YOLO("yolov8n.pt")
 
 IMG_SIZE = 224
-FRAME_SKIP = 10   # CPU friendly
+FRAME_SKIP = 10
 
-# 🔥 THRESHOLDS (from Phase 3.3)
+# Thresholds (from evaluation)
 FAKE_THRESHOLD = 0.60
+REAL_THRESHOLD = 0.40
+
 
 # ==================================================
-# FACE PREDICTION
+# FACE PREDICTION (CORRECT)
 # ==================================================
 def predict_face(face_img):
+
     face_img = cv2.resize(face_img, (IMG_SIZE, IMG_SIZE))
-    face_img = face_img / 255.0
+    face_img = face_img.astype("float32") / 255.0
     face_img = np.expand_dims(face_img, axis=0)
 
     real_prob = face_model.predict(face_img, verbose=0)[0][0]
 
-    fake_prob = 1.0 - real_prob  # 🔥 THE REAL FIX
+    # REAL = class 1
+    # FAKE = class 0
 
-    return fake_prob
+    fake_prob = 1.0 - real_prob
+
+    return fake_prob, real_prob
 
 
 # ==================================================
 # VIDEO PREDICTION
 # ==================================================
 def predict_video(video_path):
+
     cap = cv2.VideoCapture(video_path)
 
-    frame_count = 0
     fake_probs = []
+    real_probs = []
+
+    frame_count = 0
 
     while cap.isOpened():
+
         ret, frame = cap.read()
+
         if not ret:
             break
 
         frame_count += 1
+
         if frame_count % FRAME_SKIP != 0:
             continue
 
@@ -62,49 +74,68 @@ def predict_video(video_path):
 
         for r in results:
             for box in r.boxes:
+
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
+
                 face = frame[y1:y2, x1:x2]
 
                 if face.size == 0:
                     continue
 
-                prob = predict_face(face)
-                fake_probs.append(prob)
+                fake_prob, real_prob = predict_face(face)
+
+                fake_probs.append(fake_prob)
+                real_probs.append(real_prob)
 
     cap.release()
 
-    # 🚨 NO FACE FOUND
+    # ==================================================
+    # NO FACE FOUND
+    # ==================================================
+
     if len(fake_probs) < 5:
         return "FACE NOT FOUND", 0.0
 
-    # ==================================================
-    # 🔥 FINAL VIDEO-LEVEL LOGIC (MINOR RELAXATION FOR REAL)
-    # ==================================================
     fake_probs = np.array(fake_probs)
+    real_probs = np.array(real_probs)
 
     mean_fake = fake_probs.mean()
-    low_fake_ratio = np.sum(fake_probs <= 0.25) / len(fake_probs)
-    high_fake_ratio = np.sum(fake_probs >= FAKE_THRESHOLD) / len(fake_probs)
+    mean_real = real_probs.mean()
 
-    # 🚨 STRONG FAKE (HARD OVERRIDE — NEW)
-    if high_fake_ratio >= 0.20 or mean_fake >= 0.45:
-        confidence = min(95.0, max(mean_fake, high_fake_ratio) * 100)
+    strong_fake_ratio = np.mean(fake_probs >= FAKE_THRESHOLD)
+    strong_real_ratio = np.mean(real_probs >= FAKE_THRESHOLD)
+
+    # ==================================================
+    # FINAL DECISION LOGIC (CORRECT & STABLE)
+    # ==================================================
+
+    # FAKE
+    if mean_fake >= 0.55 or strong_fake_ratio >= 0.30:
+
+        confidence = min(95.0, mean_fake * 100)
+
         return "FAKE", confidence
 
-    # ✅ STRONG REAL (UNCHANGED)
-    if low_fake_ratio >= 0.60 and high_fake_ratio < 0.10:
-        confidence = min(95.0, (1 - mean_fake) * 100)
+    # REAL
+    if mean_real >= 0.55 or strong_real_ratio >= 0.30:
+
+        confidence = min(95.0, mean_real * 100)
+
         return "REAL", confidence
 
-    # 🤖 AI / AMBIGUOUS (UNCHANGED)
+    # UNCERTAIN
     return "UNCERTAIN", 50.0
+
+
 # ==================================================
 # RUN
 # ==================================================
 if __name__ == "__main__":
+
     video_path = input("🎥 Enter video path: ").strip()
 
     if not os.path.exists(video_path):
+
         print("❌ Video path not found")
         exit()
 
