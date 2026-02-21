@@ -1,21 +1,36 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>DeepFake Detection</title>
-    <link rel="stylesheet" href="/static/style.css">
+
+<title>DeepFake Detector</title>
+
+<link rel="stylesheet" href="/static/style.css">
+
 </head>
+
 <body>
 
-<h1>DeepFake Video Detection</h1>
+<div class="container glass">
+
+<h1>DeepFake Detection System</h1>
 
 <input type="file" id="videoInput">
-<br><br>
 
-<button onclick="uploadVideo()">Analyze Video</button>
+<button onclick="uploadVideo()">Analyze</button>
+
+<div id="loader" class="hidden">
+Processing Video...
+</div>
 
 <div id="result"></div>
+
+<div id="frames"></div>
+
+</div>
 
 <script src="/static/script.js"></script>
 
 </body>
+
 </html>
