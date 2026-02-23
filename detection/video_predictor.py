@@ -94,19 +94,79 @@ def predict_video(video_path):
                 fake_probs.append(fake_prob)
                 real_probs.append(real_prob)
 
-                # Save frame for UI display
+                # ==================================================
+                # VISUAL FEATURES (Production UI Frame Styling)
+                # ==================================================
+
                 label = "fake" if fake_prob >= FAKE_THRESHOLD else "real"
 
+                # Select border color
+                if label == "fake":
+                    color = (0, 0, 255)  # RED
+                elif label == "real":
+                    color = (0, 255, 0)  # GREEN
+                else:
+                    color = (0, 255, 255)  # YELLOW
+
+                # Confidence %
+                confidence_value = max(fake_prob, real_prob) * 100
+
+                confidence_text = f"{label.upper()} {confidence_value:.1f}%"
+
+                # Draw rectangle around detected face
+                cv2.rectangle(
+                    frame,
+                    (x1, y1),
+                    (x2, y2),
+                    color,
+                    3
+                )
+
+                # Draw filled rectangle behind text
+                (text_width, text_height), _ = cv2.getTextSize(
+                    confidence_text,
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    2
+                )
+
+                cv2.rectangle(
+                    frame,
+                    (x1, y1 - text_height - 10),
+                    (x1 + text_width, y1),
+                    color,
+                    -1
+                )
+
+                # Draw confidence text
+                cv2.putText(
+                    frame,
+                    confidence_text,
+                    (x1, y1 - 5),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (255, 255, 255),
+                    2,
+                    cv2.LINE_AA
+                )
+
+                # Save styled frame
                 frame_filename = f"{video_id}_{frame_count}_{label}.jpg"
-                frame_path = os.path.join(OUTPUT_FRAMES_DIR, frame_filename)
+
+                frame_path = os.path.join(
+                    OUTPUT_FRAMES_DIR,
+                    frame_filename
+                )
 
                 cv2.imwrite(frame_path, frame)
 
+                # Save frame info for UI
                 saved_frames.append({
                     "path": f"/static/results/{frame_filename}",
                     "fake_prob": float(fake_prob),
                     "real_prob": float(real_prob),
-                    "label": label
+                    "label": label,
+                    "confidence": float(confidence_value)
                 })
 
     cap.release()
