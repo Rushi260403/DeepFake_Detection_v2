@@ -11,7 +11,19 @@ async function uploadVideo() {
     const loader = document.getElementById("loader");
     const resultDiv = document.getElementById("result");
 
+    // Show loader with progress bar
     loader.classList.remove("hidden");
+
+    // Insert modern progress bar UI
+    loader.innerHTML = `
+        <div class="loader-box">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p>Analyzing video... Please wait</p>
+        </div>
+    `;
+
     resultDiv.innerHTML = "";
 
     const formData = new FormData();
@@ -26,11 +38,25 @@ async function uploadVideo() {
 
         const data = await response.json();
 
+        // Hide loader after processing
         loader.classList.add("hidden");
 
+        // Show result with modern styling
+        const resultColor =
+            data.result === "FAKE" ? "#ff4d4d" :
+            data.result === "REAL" ? "#00cc66" :
+            "#ffaa00";
+
         resultDiv.innerHTML = `
-            <h2>Result: ${data.result}</h2>
-            <h3>Confidence: ${data.confidence}</h3>
+            <div class="result-box" style="border-color:${resultColor}">
+                <h2 style="color:${resultColor}">
+                    ${data.result}
+                </h2>
+
+                <p>
+                    Confidence: <strong>${data.confidence}</strong>
+                </p>
+            </div>
         `;
 
     }
@@ -38,7 +64,11 @@ async function uploadVideo() {
 
         loader.classList.add("hidden");
 
-        resultDiv.innerHTML = "Error analyzing video";
+        resultDiv.innerHTML = `
+            <div style="color:red;">
+                Error analyzing video
+            </div>
+        `;
 
         console.error(error);
     }
