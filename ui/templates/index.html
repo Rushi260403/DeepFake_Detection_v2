@@ -2,22 +2,37 @@
 <html>
 
 <head>
-<title>DeepFake Detector</title>
+
+<title>DeepFake Detection System</title>
+
 <link rel="stylesheet" href="/static/style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
 
-<div class="container glass">
+<div class="glass">
 
 <h1>DeepFake Detection System</h1>
 
 <input type="file" id="videoInput">
 
-<button onclick="uploadVideo()">Analyze</button>
+<div id="dropZone">
+Drag & Drop Video Here
+</div>
+
+<button onclick="uploadVideo()">Analyze Video</button>
 
 <div id="loader" class="hidden">
-Processing Video...
+
+<div class="progress-bar">
+<div class="progress-fill"></div>
+</div>
+
+Processing video...
+
 </div>
 
 <div id="result"></div>
@@ -27,5 +42,4 @@ Processing Video...
 <script src="/static/script.js"></script>
 
 </body>
-
 </html>
