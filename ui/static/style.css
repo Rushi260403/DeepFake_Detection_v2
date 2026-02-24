@@ -1,256 +1,90 @@
-/* ==================================================
-   BODY BACKGROUND
-================================================== */
 body
 {
-    margin:0;
-    height:100vh;
+margin:0;
 
-    background:url("/static/bg.jpg") center/cover no-repeat;
+background:url("/static/bg.jpg") center/cover no-repeat;
 
-    font-family: 'Segoe UI', Arial, sans-serif;
+font-family:Arial;
 
-    display:flex;
-    justify-content:center;
-    align-items:center;
+display:flex;
+justify-content:center;
+align-items:center;
 
-    color:white;
+height:100vh;
+
+color:white;
 }
 
 
-/* ==================================================
-   GLASS CONTAINER
-================================================== */
 .glass
 {
-    background: rgba(255,255,255,0.12);
+background:rgba(255,255,255,0.1);
 
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+padding:30px;
 
-    padding:35px;
-    border-radius:20px;
+border-radius:15px;
 
-    text-align:center;
+backdrop-filter:blur(15px);
 
-    box-shadow:
-        0 0 25px rgba(0,0,0,0.4),
-        inset 0 0 10px rgba(255,255,255,0.1);
-
-    width:420px;
-
-    animation: fadeIn 0.6s ease;
+text-align:center;
 }
 
 
-/* ==================================================
-   TITLE
-================================================== */
-h1
-{
-    margin-bottom:20px;
-
-    font-weight:600;
-
-    text-shadow:0 0 10px rgba(0,0,0,0.6);
-}
-
-
-/* ==================================================
-   FILE INPUT
-================================================== */
-input[type="file"]
-{
-    margin-top:10px;
-    margin-bottom:10px;
-
-    color:white;
-}
-
-
-/* ==================================================
-   MODERN BUTTON
-================================================== */
 button
 {
-    padding:12px 25px;
-
-    margin-top:10px;
-
-    cursor:pointer;
-
-    border:none;
-    border-radius:10px;
-
-    font-size:16px;
-    font-weight:600;
-
-    color:white;
-
-    background: linear-gradient(135deg,#00c6ff,#0072ff);
-
-    transition:0.3s;
-
-    box-shadow:0 0 15px rgba(0,198,255,0.5);
+padding:10px 20px;
+margin-top:10px;
+cursor:pointer;
 }
 
 
-button:hover
-{
-    transform:scale(1.05);
-
-    box-shadow:0 0 25px rgba(0,198,255,0.8);
-}
-
-
-/* ==================================================
-   HIDDEN CLASS
-================================================== */
 .hidden
 {
-    display:none;
+display:none;
 }
 
-
-/* ==================================================
-   PROGRESS BAR LOADER
-================================================== */
-.loader-box
-{
-    margin-top:20px;
-}
 
 .progress-bar
 {
-    width:100%;
-    height:12px;
+width:300px;
+height:10px;
 
-    background: rgba(255,255,255,0.2);
+background:#444;
 
-    border-radius:20px;
+margin:auto;
 
-    overflow:hidden;
+border-radius:5px;
 
-    margin-bottom:10px;
+overflow:hidden;
 }
+
 
 .progress-fill
 {
-    height:100%;
+width:100%;
 
-    width:30%;
+height:100%;
 
-    background: linear-gradient(90deg,#00ffcc,#00aaff);
+background:linear-gradient(90deg, red, green);
 
-    border-radius:20px;
-
-    animation: loading 1.4s infinite;
+animation:progress 2s infinite;
 }
 
 
-@keyframes loading
+@keyframes progress
 {
-    0%
-    {
-        margin-left:-30%;
-    }
-
-    100%
-    {
-        margin-left:100%;
-    }
+0%{transform:translateX(-100%)}
+100%{transform:translateX(100%)}
 }
 
 
-/* ==================================================
-   RESULT BOX
-================================================== */
-.result-box
+#dropZone
 {
-    margin-top:20px;
+border:2px dashed white;
 
-    padding:15px;
+padding:20px;
 
-    border-radius:12px;
+margin-top:10px;
 
-    background: rgba(0,0,0,0.4);
-
-    border:2px solid;
-
-    animation: fadeIn 0.5s ease;
-
-    box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-
-
-/* ==================================================
-   RESULT COLORS
-================================================== */
-
-.result-box.fake
-{
-    border-color:#ff4d4d;
-    box-shadow:0 0 20px rgba(255,0,0,0.6);
-}
-
-.result-box.real
-{
-    border-color:#00ff88;
-    box-shadow:0 0 20px rgba(0,255,150,0.6);
-}
-
-.result-box.uncertain
-{
-    border-color:#ffaa00;
-    box-shadow:0 0 20px rgba(255,170,0,0.6);
-}
-
-
-/* ==================================================
-   FRAME GRID (if enabled later)
-================================================== */
-.framesGrid
-{
-    display:grid;
-
-    grid-template-columns: repeat(5,1fr);
-
-    gap:10px;
-
-    margin-top:20px;
-}
-
-.frameImage
-{
-    width:100%;
-
-    border-radius:8px;
-
-    transition:0.3s;
-}
-
-.frameImage:hover
-{
-    transform:scale(1.1);
-
-    box-shadow:0 0 15px rgba(255,255,255,0.6);
-}
-
-
-/* ==================================================
-   FADE ANIMATION
-================================================== */
-@keyframes fadeIn
-{
-    from
-    {
-        opacity:0;
-        transform:translateY(15px);
-    }
-
-    to
-    {
-        opacity:1;
-        transform:translateY(0);
-    }
+border-radius:10px;
 }
