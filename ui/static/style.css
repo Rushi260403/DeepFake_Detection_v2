@@ -87,4 +87,79 @@ padding:20px;
 margin-top:10px;
 
 border-radius:10px;
+}body {
+    margin: 0;
+    height: 100vh;
+    background: url("/static/bg.jpg") center/cover no-repeat;
+    font-family: Arial;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.glass {
+    width: 500px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(15px);
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    color: white;
+}
+
+.dropArea {
+    border: 2px dashed white;
+    padding: 30px;
+    margin-top: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.dragover {
+    background: rgba(255,255,255,0.3);
+}
+
+button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+}
+
+.analyzeBtn {
+    background: #00c6ff;
+    color: white;
+    font-weight: bold;
+}
+
+.progressContainer {
+    width: 100%;
+    background: rgba(255,255,255,0.3);
+    height: 10px;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+.progressBar {
+    height: 100%;
+    width: 0%;
+    background: limegreen;
+    border-radius: 10px;
+}
+
+.hidden {
+    display: none;
+}
+
+.REAL {
+    color: lime;
+}
+
+.FAKE {
+    color: red;
+}
+
+canvas {
+    margin-top: 20px;
 }

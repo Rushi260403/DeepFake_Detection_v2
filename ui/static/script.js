@@ -1,104 +1,93 @@
-async function uploadVideo()
-{
-    const input = document.getElementById("videoInput");
+let chart;
 
-    if (!input.files.length)
-    {
-        alert("Select video first");
+function selectFile() {
+    document.getElementById("videoInput").click();
+}
+
+const dropArea = document.getElementById("dropArea");
+const input = document.getElementById("videoInput");
+
+dropArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropArea.classList.add("dragover");
+});
+
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("dragover");
+});
+
+dropArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropArea.classList.remove("dragover");
+    input.files = e.dataTransfer.files;
+    dropArea.innerHTML = e.dataTransfer.files[0].name;
+});
+
+async function uploadVideo() {
+
+    const file = input.files[0];
+
+    if (!file) {
+        alert("Please select a video");
         return;
     }
 
-    const loader = document.getElementById("loader");
+    const progressBar = document.getElementById("progressBar");
+    const progressContainer = document.getElementById("progressContainer");
     const resultDiv = document.getElementById("result");
 
-    loader.classList.remove("hidden");
-
+    progressContainer.classList.remove("hidden");
+    progressBar.style.width = "0%";
     resultDiv.innerHTML = "";
 
     const formData = new FormData();
+    formData.append("video", file);
 
-    formData.append("video", input.files[0]);
+    // Fake progress animation
+    let width = 0;
+    let interval = setInterval(() => {
+        if (width >= 90) clearInterval(interval);
+        width += 5;
+        progressBar.style.width = width + "%";
+    }, 200);
 
-    try
-    {
-        const response = await fetch("/upload",
-        {
-            method: "POST",
-            body: formData
-        });
+    const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        loader.classList.add("hidden");
+    clearInterval(interval);
+    progressBar.style.width = "100%";
 
-        showResult(data);
-    }
-    catch(error)
-    {
-        loader.classList.add("hidden");
-
-        alert("Error analyzing video");
-    }
-}
-
-
-function showResult(data)
-{
-    const resultDiv = document.getElementById("result");
-
-    let color = "#ffaa00";
-
-    if(data.result == "FAKE") color = "#ff4444";
-
-    if(data.result == "REAL") color = "#00ff88";
-
-
-    resultDiv.innerHTML =
-    `
-    <div style="color:${color}">
-    <h2>${data.result}</h2>
-    <h3>${data.confidence}% confidence</h3>
-
-    <canvas id="chart"></canvas>
-
-    </div>
+    resultDiv.innerHTML = `
+        <h2 class="${data.result}">${data.result}</h2>
+        <h3>${data.confidence}% Confidence</h3>
+        <p>Real Frames: ${data.real_count}</p>
+        <p>Fake Frames: ${data.fake_count}</p>
     `;
 
-    drawChart(data);
+    createChart(data.real_percent, data.fake_percent);
 }
 
+function createChart(real, fake) {
 
-function drawChart(data)
-{
-    let fake = data.result=="FAKE"?data.confidence:100-data.confidence;
-    let real = data.result=="REAL"?data.confidence:100-data.confidence;
+    const ctx = document.getElementById("chartCanvas");
 
-    new Chart(document.getElementById("chart"),
-    {
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
         type: "doughnut",
-
-        data:
-        {
-            labels:["Fake","Real"],
-
-            datasets:
-            [{
-                data:[fake,real],
-
-                backgroundColor:["red","green"]
+        data: {
+            labels: ["Real", "Fake"],
+            datasets: [{
+                data: [real, fake],
+                backgroundColor: ["green", "red"]
             }]
+        },
+        options: {
+            responsive: true
         }
     });
 }
-
-
-const dropZone = document.getElementById("dropZone");
-
-dropZone.ondragover = e => e.preventDefault();
-
-dropZone.ondrop = e =>
-{
-    e.preventDefault();
-
-    document.getElementById("videoInput").files = e.dataTransfer.files;
-};
