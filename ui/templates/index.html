@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DeepFake Detection System</title>
+    <title>DeepFake Detection</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -11,30 +10,31 @@
 
     <h1>DeepFake Detection System</h1>
 
-    <!-- Hidden File Input -->
-    <input type="file" id="videoInput" hidden>
+    <!-- Hidden file input -->
+    <input type="file" id="videoInput" accept="video/*" hidden>
+
+    <!-- Choose Button -->
+    <button id="chooseBtn">Choose Video</button>
+
+    <!-- File Name Display -->
+    <p id="fileName">No file selected</p>
 
     <!-- Drag & Drop Area -->
     <div id="dropArea" class="dropArea">
         Drag & Drop Video Here
-        <br><br>
-        <button onclick="selectFile()">Choose Video</button>
     </div>
 
-    <button class="analyzeBtn" onclick="uploadVideo()">Analyze</button>
+    <!-- Analyze Button -->
+    <button onclick="uploadVideo()">Analyze</button>
 
-    <!-- Progress Bar -->
-    <div id="progressContainer" class="progressContainer hidden">
-        <div id="progressBar" class="progressBar"></div>
-    </div>
+    <!-- Loader -->
+    <div id="loader" class="spinner hidden"></div>
 
-    <div id="result"></div>
-
-    <canvas id="chartCanvas"></canvas>
+    <!-- Result -->
+    <div id="result" class="resultBox"></div>
 
 </div>
 
 <script src="/static/script.js"></script>
-
 </body>
 </html>

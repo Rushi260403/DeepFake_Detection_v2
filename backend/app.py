@@ -3,7 +3,9 @@ import os
 import cv2
 import random
 
-app = Flask(__name__)
+app = Flask(__name__,
+            template_folder="../ui/templates",
+            static_folder="../ui/static")
 
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

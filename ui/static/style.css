@@ -163,3 +163,20 @@ button {
 canvas {
     margin-top: 20px;
 }
+
+.dropArea {
+    border: 2px dashed white;
+    padding: 20px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+#fileName {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.resultBox h2 {
+    margin-top: 15px;
+    font-size: 22px;
+}

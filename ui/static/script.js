@@ -1,93 +1,79 @@
-let chart;
-
-function selectFile() {
-    document.getElementById("videoInput").click();
-}
-
-const dropArea = document.getElementById("dropArea");
 const input = document.getElementById("videoInput");
+const chooseBtn = document.getElementById("chooseBtn");
+const fileNameText = document.getElementById("fileName");
+const dropArea = document.getElementById("dropArea");
 
+let selectedFile = null;
+
+/* Choose button click */
+chooseBtn.addEventListener("click", () => {
+    input.click();
+});
+
+/* File selected from system */
+input.addEventListener("change", () => {
+    if (input.files.length > 0) {
+        selectedFile = input.files[0];
+        fileNameText.innerText = selectedFile.name;
+    }
+});
+
+/* Drag & Drop */
 dropArea.addEventListener("dragover", (e) => {
     e.preventDefault();
-    dropArea.classList.add("dragover");
+    dropArea.style.border = "2px solid #00ffcc";
 });
 
 dropArea.addEventListener("dragleave", () => {
-    dropArea.classList.remove("dragover");
+    dropArea.style.border = "2px dashed white";
 });
 
 dropArea.addEventListener("drop", (e) => {
     e.preventDefault();
-    dropArea.classList.remove("dragover");
-    input.files = e.dataTransfer.files;
-    dropArea.innerHTML = e.dataTransfer.files[0].name;
+    dropArea.style.border = "2px dashed white";
+
+    if (e.dataTransfer.files.length > 0) {
+        selectedFile = e.dataTransfer.files[0];
+        fileNameText.innerText = selectedFile.name;
+    }
 });
 
+/* Upload & Analyze */
 async function uploadVideo() {
 
-    const file = input.files[0];
-
-    if (!file) {
-        alert("Please select a video");
+    if (!selectedFile) {
+        alert("Please select a video first");
         return;
     }
 
-    const progressBar = document.getElementById("progressBar");
-    const progressContainer = document.getElementById("progressContainer");
+    const loader = document.getElementById("loader");
     const resultDiv = document.getElementById("result");
 
-    progressContainer.classList.remove("hidden");
-    progressBar.style.width = "0%";
+    loader.classList.remove("hidden");
     resultDiv.innerHTML = "";
 
     const formData = new FormData();
-    formData.append("video", file);
+    formData.append("video", selectedFile);
 
-    // Fake progress animation
-    let width = 0;
-    let interval = setInterval(() => {
-        if (width >= 90) clearInterval(interval);
-        width += 5;
-        progressBar.style.width = width + "%";
-    }, 200);
+    try {
 
-    const response = await fetch("/upload", {
-        method: "POST",
-        body: formData
-    });
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    clearInterval(interval);
-    progressBar.style.width = "100%";
+        loader.classList.add("hidden");
 
-    resultDiv.innerHTML = `
-        <h2 class="${data.result}">${data.result}</h2>
-        <h3>${data.confidence}% Confidence</h3>
-        <p>Real Frames: ${data.real_count}</p>
-        <p>Fake Frames: ${data.fake_count}</p>
-    `;
+        resultDiv.innerHTML = `
+            <h2>${data.result}</h2>
+            <h3>Confidence: ${data.confidence}</h3>
+        `;
 
-    createChart(data.real_percent, data.fake_percent);
-}
-
-function createChart(real, fake) {
-
-    const ctx = document.getElementById("chartCanvas");
-
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-            labels: ["Real", "Fake"],
-            datasets: [{
-                data: [real, fake],
-                backgroundColor: ["green", "red"]
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
+    } catch (error) {
+        loader.classList.add("hidden");
+        resultDiv.innerHTML = "Error analyzing video";
+        console.error(error);
+    }
 }
