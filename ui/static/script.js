@@ -48,62 +48,99 @@ async function uploadVideo() {
 
     const loader = document.getElementById("loader");
     const resultDiv = document.getElementById("result");
+    const progressBar = document.getElementById("progressBar");
+    const card = document.querySelector(".glass");
 
     loader.classList.remove("hidden");
     resultDiv.innerHTML = "";
+    progressBar.style.width = "0%";
 
     const formData = new FormData();
     formData.append("video", selectedFile);
 
-    try {
+    const xhr = new XMLHttpRequest();
 
-        const response = await fetch("/upload", {
-            method: "POST",
-            body: formData
-        });
+    xhr.open("POST", "/upload", true);
 
-        const data = await response.json();
+    // 🔥 LIVE PROGRESS
+    xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+            let percent = (e.loaded / e.total) * 100;
+            progressBar.style.width = percent + "%";
+        }
+    };
 
-        loader.classList.add("hidden");
-
-        // Add animation
-        resultDiv.style.opacity = "0";
-
-        setTimeout(() => {
-
-            if (data.result.toLowerCase().includes("fake")) {
-
-                resultDiv.innerHTML = `
-                    <div class="fake">
-                        ⚠ FAKE VIDEO <br>
-                        Confidence: ${data.confidence}
-                    </div>
-                `;
-
-            } else {
-
-                resultDiv.innerHTML = `
-                    <div class="real">
-                        ✔ REAL VIDEO <br>
-                        Confidence: ${data.confidence}
-                    </div>
-                `;
-            }
-
-            resultDiv.style.opacity = "1";
-
-        }, 200);
-
-    } catch (error) {
+    xhr.onload = function () {
 
         loader.classList.add("hidden");
 
-        resultDiv.innerHTML = `
-            <div class="fake">
-                Error analyzing video
-            </div>
-        `;
+        const data = JSON.parse(xhr.responseText);
 
-        console.error(error);
-    }
+        showAnimatedResult(data);
+
+        playNotification();
+    };
+
+    xhr.send(formData);
 }
+
+function animateCounter(element, target) {
+
+    let count = 0;
+    let speed = 20;
+    let increment = target / 50;
+
+    let interval = setInterval(() => {
+
+        count += increment;
+
+        if (count >= target) {
+            count = target;
+            clearInterval(interval);
+        }
+
+        element.innerText = count.toFixed(1) + "%";
+
+    }, speed);
+}
+
+function showAnimatedResult(data) {
+
+    const resultDiv = document.getElementById("result");
+    const card = document.querySelector(".glass");
+
+    let resultClass = data.result.toLowerCase().includes("fake")
+        ? "fake"
+        : "real";
+
+    card.classList.remove("fake-border", "real-border");
+    card.classList.add(resultClass + "-border");
+
+    resultDiv.innerHTML = `
+        <div class="${resultClass}">
+            ${data.result}
+            <br>
+            Confidence: <span id="counter">0%</span>
+        </div>
+    `;
+
+    const counterElement = document.getElementById("counter");
+    animateCounter(counterElement, parseFloat(data.confidence));
+}
+
+function playNotification() {
+    const audio = new Audio("/static/success.mp3");
+    audio.play();
+}
+
+const toggleBtn = document.getElementById("themeToggle");
+
+toggleBtn.addEventListener("click", () => {
+    document.body.classList.toggle("light-mode");
+
+    if (document.body.classList.contains("light-mode")) {
+        toggleBtn.innerText = "☀";
+    } else {
+        toggleBtn.innerText = "🌙";
+    }
+});
