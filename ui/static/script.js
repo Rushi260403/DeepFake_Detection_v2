@@ -21,16 +21,16 @@ input.addEventListener("change", () => {
 /* Drag & Drop */
 dropArea.addEventListener("dragover", (e) => {
     e.preventDefault();
-    dropArea.style.border = "2px solid #00ffcc";
+    dropArea.classList.add("hover");
 });
 
 dropArea.addEventListener("dragleave", () => {
-    dropArea.style.border = "2px dashed white";
+    dropArea.classList.remove("hover");
 });
 
 dropArea.addEventListener("drop", (e) => {
     e.preventDefault();
-    dropArea.style.border = "2px dashed white";
+    dropArea.classList.remove("hover");
 
     if (e.dataTransfer.files.length > 0) {
         selectedFile = e.dataTransfer.files[0];
@@ -66,14 +66,44 @@ async function uploadVideo() {
 
         loader.classList.add("hidden");
 
-        resultDiv.innerHTML = `
-            <h2>${data.result}</h2>
-            <h3>Confidence: ${data.confidence}</h3>
-        `;
+        // Add animation
+        resultDiv.style.opacity = "0";
+
+        setTimeout(() => {
+
+            if (data.result.toLowerCase().includes("fake")) {
+
+                resultDiv.innerHTML = `
+                    <div class="fake">
+                        ⚠ FAKE VIDEO <br>
+                        Confidence: ${data.confidence}
+                    </div>
+                `;
+
+            } else {
+
+                resultDiv.innerHTML = `
+                    <div class="real">
+                        ✔ REAL VIDEO <br>
+                        Confidence: ${data.confidence}
+                    </div>
+                `;
+            }
+
+            resultDiv.style.opacity = "1";
+
+        }, 200);
 
     } catch (error) {
+
         loader.classList.add("hidden");
-        resultDiv.innerHTML = "Error analyzing video";
+
+        resultDiv.innerHTML = `
+            <div class="fake">
+                Error analyzing video
+            </div>
+        `;
+
         console.error(error);
     }
 }
